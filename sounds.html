@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>test</title>
+	<script src="jq.js"></script>
+	<script src="http://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+</head>
+<style type="text/css" media="screen">
+	#record{
+		position: absolute;
+		top:100px;
+		width: 100px;
+		height: 100px;
+		background: red;
+	}
+</style>
+<body>
+	<div id="record">点击</div>
+	<script>
+		var btnRecord = $('#record');
+btnRecord.on('touchstart', function(event) {
+	console.log(44)
+    event.preventDefault();
+    btnRecord.addClass('hold');
+    startTime = new Date().getTime();
+    // 延时后录音，避免误操作
+    recordTimer = setTimeout(function() {
+        wx.startRecord({
+            success: function() {
+            },
+            cancel: function() {
+                alert('用户拒绝授权录音');
+            }
+        });
+    }, 300);
+}).on('touchend', function(event) {
+    event.preventDefault();
+    btnRecord.removeClass('hold');
+    // 间隔太短
+    if (new Date().getTime() - startTime < 300) {
+        startTime = 0;
+        // 不录音
+        clearTimeout(recordTimer);
+    } else { // 松手结束录音
+        wx.stopRecord({
+            success: function(res) {
+                localId = res.localId;
+                // 上传到服务器
+                uploadVoice();
+            },
+            fail: function(res) {
+                alert(JSON.stringify(res));
+            }
+        });
+    }
+});
+	</script>
+</body>
+</html>
